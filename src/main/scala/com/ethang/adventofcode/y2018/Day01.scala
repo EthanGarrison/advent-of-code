@@ -8,12 +8,6 @@ object Day01 {
 
   def readInputData(input: Seq[String]): Seq[Int] = input.map(_.toInt)
 
-  def taskOne(inputFile: String): Int = {
-    val inputData = readResourceFile(inputFile).getLines().toSeq
-
-    readInputData(inputData).sum
-  }
-
   def findFirstDuplicate(inputData: Seq[Int]): Int = {
     @tailrec
     def search(current: Int = 0, data: Seq[Int] = inputData, seen: Set[Int] = Set()): Int = {
@@ -28,6 +22,12 @@ object Day01 {
     }
 
     search()
+  }
+
+  def taskOne(inputFile: String): Int = {
+    val inputData = readResourceFile(inputFile).getLines().toSeq
+
+    readInputData(inputData).sum
   }
 
   def taskTwo(inputFile: String): Int = {
