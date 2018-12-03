@@ -42,7 +42,21 @@ class Day02Spec extends DaySpec {
       .foreach { case (i, e) => i must be(e) }
   }
 
+  it must "score two strings differences" in {
+    val expected = Seq(2, 5, 1, 5, 5, 5)
+    Seq("abcde", "axcye", "fghij", "fguij", "klmno", "pqrst", "wvxyz")
+      .sliding(2).toSeq
+      .zip(expected)
+      .foreach {
+        case (Seq(l, r), e) => Day02.scoreStringComparison(l, r) must be(e)
+      }
+  }
+
   it must "perform task one" in {
-    println(Day02.taskOne(inputFile))
+    Day02.taskOne(inputFile) must be(9139)
+  }
+
+  it must "perform task two" in {
+    Day02.taskTwo(inputFile) must be("uqcidadzwtnhsljvxyobmkfyr")
   }
 }
