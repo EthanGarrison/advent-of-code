@@ -33,7 +33,7 @@ class Day03Spec extends DaySpec {
 
   }
 
-  it must "perform task one" in {
+  ignore must "perform task one" in {
     Day03.taskOne(inputData) must be(110827)
   }
 
@@ -48,7 +48,7 @@ class Day03Spec extends DaySpec {
       .foreach { case (input, expected) => Day03.rectContainsPoint(rect, input) must be(expected) }
   }
 
-  it must "perform task two" in {
+  ignore must "perform task two" in {
     Day03.taskTwo(inputData) must be(116)
   }
 }

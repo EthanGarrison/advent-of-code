@@ -13,14 +13,7 @@ object Day02 {
   }
 
   def scoreStringComparison(left: String, right: String): Int = {
-    val lengthDiff = left.length - right.length
-
-    val charDiff = left
-      .zip(right)
-      .map { case (l, r) => if (l != r) 1 else 0 }
-      .sum
-
-    lengthDiff + charDiff
+    left.zip(right).count { case (l, r) => l != r }
   }
 
   def taskOne(inputFile: String): Int = {
