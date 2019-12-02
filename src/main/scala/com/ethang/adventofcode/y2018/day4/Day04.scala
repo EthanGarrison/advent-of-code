@@ -47,14 +47,14 @@ object Day04 {
       }
     }
 
-    guardMinuteSleepCount.mapValues(_.toMap).toMap
+    guardMinuteSleepCount.view.mapValues(_.toMap).toMap
   }
 
   def findMaxGuardMinute(guardData: Seq[DataEntry]): (Int, Int) = {
     // First, we want to sort by the timestamp given, so that we can figure shift changes and sleep/wakes
     val guardMinuteSleepCount = calculateGuardMinuteCount(guardData)
 
-    val maxGuard = guardMinuteSleepCount.mapValues(_.values.sum).toSeq.maxBy(_._2)._1
+    val maxGuard = guardMinuteSleepCount.view.mapValues(_.values.sum).toSeq.maxBy(_._2)._1
     val maxMinute = guardMinuteSleepCount.get(maxGuard).map(_.toSeq.maxBy(_._2)._1).getOrElse(0)
 
     (maxGuard, maxMinute)
@@ -64,7 +64,7 @@ object Day04 {
   def findAnyGuardMaxMinute(guardData: Seq[DataEntry]): (Int, Int) = {
     val guardMinuteCount = calculateGuardMinuteCount(guardData)
 
-    val guardMaxMinute = guardMinuteCount.mapValues(_.maxBy(_._2))
+    val guardMaxMinute = guardMinuteCount.view.mapValues(_.maxBy(_._2))
 
     val result = guardMaxMinute.maxBy(_._2._2)
 

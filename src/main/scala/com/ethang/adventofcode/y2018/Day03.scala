@@ -16,7 +16,7 @@ object Day03 {
 
   private lazy val emptySquare: CollisionMap = rectangleToCollisionMap(
     Rectangle(-1, Point(0, 0), Point(1000, 1000))
-  ).mapValues(_ => 0)
+  ).view.mapValues(_ => 0).toMap
 
   def parseInputStr(input: String): Rectangle = {
     val pointReg: String => String = sep => s"""[0-9]+?$sep[0-9]+?"""
@@ -25,7 +25,6 @@ object Day03 {
     val strToPoint: String => String => Point = sep => str => str.split(sep) match {
       case Array(l, r) => Point(l.toInt, r.toInt)
     }
-
 
     input match {
       case reg(id, topLeftStr, bottomRightStr) =>
