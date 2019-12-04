@@ -21,7 +21,7 @@ class Day02Spec extends DaySpec with Inspectors {
     }
   }
 
-  it should "should run day two" in {
+  it should "run day two" in {
     Day02.runAll(inputPath)
   }
 
