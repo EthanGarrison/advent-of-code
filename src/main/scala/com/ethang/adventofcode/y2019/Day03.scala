@@ -5,6 +5,7 @@ import com.ethang.adventofcode.readResourceFile
 object Day03 {
 
   private val partOneAnswer = 1195
+  private val partTwoAnswer = 91518
 
   sealed trait WireDirection
 
@@ -35,33 +36,24 @@ object Day03 {
 
   }
 
-  private def updateCoord(instr: Instruction, coord: (Int, Int)): (Int, Int) = {
+  private def genWireSnippet(instr: Instruction, coord: (Int, Int)): Seq[(Int, Int)] = {
     val (dir, dist) = instr
     val (x, y) = coord
     dir match {
-      case InstructionOps.Right => (x + dist, y)
-      case InstructionOps.Left => (x - dist, y)
-      case InstructionOps.Up => (x, y + dist)
-      case InstructionOps.Down => (x, y - dist)
+      case InstructionOps.Right => for(n <- x to (x + dist)) yield (n, y)
+      case InstructionOps.Left => for(n <- x to (x - dist) by -1) yield (n, y)
+      case InstructionOps.Up => for(n <- y to (y + dist)) yield (x, n)
+      case InstructionOps.Down => for(n <- y to (y - dist) by -1) yield (x, n)
     }
-  }
-
-  private def drawWire(wireMap: WireMap, start: (Int, Int), end: (Int, Int)) = {
-    val (sX, sY) = start
-    val (eX, eY) = end
-    val line = for {
-      x <- if (sX <= eX) sX to eX else eX to sX
-      y <- if (sY <= eY) sY to eY else eY to sY
-    } yield (x, y) -> wireMap.getOrElse((x, y), 1) // Don't increment, as we don't want to count self-overlaps
-    wireMap ++ line
   }
 
   @scala.annotation.tailrec
   private def drawWireMap(wire: Seq[Instruction], wireMap: WireMap, coord: (Int, Int)): WireMap = {
     if (wire.isEmpty) wireMap
     else {
-      val newCoord = updateCoord(wire.head, coord)
-      drawWireMap(wire.tail, drawWire(wireMap, coord, newCoord), newCoord)
+      val wireSnip = genWireSnippet(wire.head, coord)
+      val updatedMap = wireMap ++ wireSnip.map(coord => coord -> wireMap.getOrElse(coord, 1))
+      drawWireMap(wire.tail, updatedMap, wireSnip.last)
     }
   }
 
@@ -108,19 +100,57 @@ object Day03 {
     wireMap.iterator
       .collect {
         // Find intersection, which should have a point in each direction
-        case ((x, y), cnt) if cnt > 1 && chkIntersect(x, y) =>
-          val dist = Math.abs(x) + Math.abs(y)
-          println(s"Found Intersection at ($x, $y), distance is $dist")
-          dist
+        case ((x, y), cnt) if cnt > 1 && chkIntersect(x, y) => Math.abs(x) + Math.abs(y)
       }
       .toSeq.min
+  }
+
+  private def countStepToIntersection(intersection: (Int, Int))(wire: Seq[Instruction]): Int = {
+    @scala.annotation.tailrec
+    def recurse(w: Seq[Instruction], coord: (Int, Int) = (0, 0), steps: Int = 0): Int = {
+      if(w.isEmpty) steps
+      else {
+        val instr @ (dir, dist) = w.head
+        val wireSnip = genWireSnippet(instr, coord)
+        val indexOf = wireSnip.indexOf(intersection)
+        if(indexOf < 0) recurse(w.tail, wireSnip.last, steps + dist)
+        else {
+          steps + (dir match {
+            case InstructionOps.Right | InstructionOps.Up => dist - indexOf
+            case InstructionOps.Left | InstructionOps.Down => indexOf
+          })
+        }
+      }
+    }
+
+    recurse(wire)
+  }
+
+  def partTwo(firstWire: Seq[Instruction], secondWire: Seq[Instruction]): Int = {
+    val _draw = (instrList: Seq[Instruction]) => drawWireMap(instrList, Map(), (0, 0))
+    val wireMap = mergeWireMap(_draw(firstWire), _draw(secondWire))
+    val chkIntersect = checkIntersection(wireMap) _
+
+    wireMap.iterator
+      .collect {
+        // Find intersection, which should have a point in each direction
+        case ((x, y), cnt) if cnt > 1 && chkIntersect(x, y) => (x, y)
+      }
+      .map { intersection =>
+        val countStep = countStepToIntersection(intersection) _
+        val fstCount = countStep(firstWire)
+        val sndCount = countStep(secondWire)
+        fstCount + sndCount
+      }
+      .min
   }
 
   def runAll(inputPath: String): Unit = {
     val (fst, snd) = inputToWires(readResourceFile(inputPath).getLines().toSeq)
     val partOneResult = partOne(fst, snd)
-    assert(partOneResult == partOneAnswer, "Part One failed")
-    println(s"\nResult: $partOneResult\n")
+    val partTwoResult = partTwo(fst, snd)
+    assert(partOneResult == partOneAnswer, "Part One Failed")
+    assert(partTwoResult == partTwoAnswer, "Part Two Failed")
   }
 
 }
