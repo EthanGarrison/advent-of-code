@@ -17,7 +17,7 @@ class Day01Spec extends DaySpec {
     Day01.partTwo(testInput) must be (expected)
   }
 
-  it should "should run day one" in {
+  it should "run day one" in {
     Day01.runAll(inputPath)
   }
 

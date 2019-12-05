@@ -41,7 +41,7 @@ class Day03Spec extends DaySpec with Inspectors {
     }
   }
 
-  it  should "run day day 03" in {
+  it  should "run day 03" in {
     Day03.runAll(inputPath)
   }
 
