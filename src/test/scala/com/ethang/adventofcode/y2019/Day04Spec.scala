@@ -1,10 +1,10 @@
 package com.ethang.adventofcode.y2019
 
-import com.ethang.adventofcode.DaySpec
+import com.ethang.adventofcode.BaseSpec
 
 import org.scalatest.Inspectors
 
-class Day04Spec extends DaySpec with Inspectors {
+class Day04Spec extends BaseSpec with Inspectors {
 
   it should "handle part one example tests" in {
     forAll(Seq(111111L -> true, 223450L -> false, 123789L -> false)) {

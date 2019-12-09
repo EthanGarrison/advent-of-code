@@ -1,10 +1,10 @@
 package com.ethang.adventofcode.y2019
 
-import com.ethang.adventofcode.DaySpec
+import com.ethang.adventofcode.BaseSpec
 import com.ethang.adventofcode.y2019.Day03.{InstructionOps => iOps}
 import org.scalatest.Inspectors
 
-class Day03Spec extends DaySpec with Inspectors {
+class Day03Spec extends BaseSpec with Inspectors {
 
   private val inputPath = "input/y2019/day03.txt"
 

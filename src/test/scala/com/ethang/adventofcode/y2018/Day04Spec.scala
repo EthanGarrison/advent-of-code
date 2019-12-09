@@ -1,6 +1,6 @@
 package com.ethang.adventofcode.y2018
 
-import com.ethang.adventofcode.DaySpec
+import com.ethang.adventofcode.BaseSpec
 import com.ethang.adventofcode.y2018.day4.Day04
 import com.ethang.adventofcode.y2018.day4.Day04.DataEntry
 import com.ethang.adventofcode.y2018.day4.GuardAction._
@@ -8,7 +8,7 @@ import org.scalatest.Inspectors
 
 // TODO: Bad code lead to even worse tests.  Originally had better when I started writing, but just cutting them as the code got worse
 // I blame everthing on `Day04.calculateGuardMinuteCount`.  Really messed up my groove.  Fix that and all will be good
-class Day04Spec extends DaySpec with Inspectors {
+class Day04Spec extends BaseSpec with Inspectors {
 
   private val inputFile = "input/y2018/day04.txt"
 

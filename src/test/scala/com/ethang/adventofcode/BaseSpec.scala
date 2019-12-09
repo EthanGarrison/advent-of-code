@@ -1,6 +1,7 @@
 package com.ethang.adventofcode
 
+import org.scalatest.Inspectors
 import org.scalatest.matchers.must.{Matchers => MustMatchers}
 import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
 
-trait DaySpec extends FlatSpec with MustMatchers
+trait BaseSpec extends FlatSpec with MustMatchers with Inspectors

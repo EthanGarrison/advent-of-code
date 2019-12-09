@@ -1,9 +1,9 @@
 package com.ethang.adventofcode.y2018
 
-import com.ethang.adventofcode.DaySpec
+import com.ethang.adventofcode.BaseSpec
 import org.scalatest.Inspectors
 
-class Day05Spec extends DaySpec with Inspectors {
+class Day05Spec extends BaseSpec with Inspectors {
 
   private val inputFile = "input/y2018/day05.txt"
 

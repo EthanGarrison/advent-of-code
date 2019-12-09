@@ -1,8 +1,10 @@
 package com.ethang.adventofcode.y2019
 
-object Day04 {
+object Day04 extends ProblemFormat[(Long, Long), Int] {
 
-  private val partOneAnswer = 1610
+  override val partOneAnswer = 1610
+  override val partTwoAnswer = 1104
+
   private val checkLength = (s: Seq[Char]) => s.length == 6
   private val checkAscending = (s: Seq[Char]) => s.sorted == s
 
@@ -14,20 +16,23 @@ object Day04 {
 
   def partTwoRuleCheck(i: Long): Boolean = {
     val s = i.toString.toSeq
-    val checkDoubleDigit = (' ' +: s :+ ' ') .sliding(4).exists {
+    val checkDoubleDigit = (' ' +: s :+ ' ').sliding(4).exists {
       case Seq(ol, l, r, or) => (ol != l) && (l == r) && (r != or)
     }
 
     checkLength(s) && checkAscending(s) && checkDoubleDigit
   }
 
-  def runAll(inputStr: String): Unit = {
-    val Array(lower, upper) = inputStr.split('-').map(_.toLong)
-
-    val partOneResult = (lower to upper).count(partOneRuleCheck)
-    val partTwoResult = (lower to upper).count(partTwoRuleCheck)
-    assert(partOneResult == partOneAnswer, "Part One Failed")
-    println(s"Result: $partTwoResult")
+  override def readInput(path: String): (Long, Long) = {
+    val Array(lower, upper) = path.split('-').map(_.toLong)
+    (lower, upper)
   }
 
+  override def partOne(inputData: (Long, Long)): Int = inputData match {
+    case (lower, upper) => (lower to upper).count(partOneRuleCheck)
+  }
+
+  override def partTwo(inputData: (Long, Long)): Int = inputData match {
+    case (lower, upper) => (lower to upper).count(partTwoRuleCheck)
+  }
 }

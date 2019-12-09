@@ -1,8 +1,8 @@
 package com.ethang.adventofcode.y2018
 
-import com.ethang.adventofcode.DaySpec
+import com.ethang.adventofcode.BaseSpec
 
-class Day01Spec extends DaySpec {
+class Day01Spec extends BaseSpec {
 
   private val inputData = "input/y2018/day01.txt"
 
