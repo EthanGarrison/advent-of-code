@@ -1,10 +1,13 @@
 package com.ethang.adventofcode.y2019.intcode
 
+import com.ethang.adventofcode.readResourceFile
+
 object IntCodeParser {
 
-  private type Program = (Vector[Int], Int, Seq[Int])
+  private type Program = (Vector[Int], Int, Seq[Int], Seq[Int])
 
-  private def evalOpCode(listing: Vector[Int], curr: Int, inputs: Seq[Int]): Program = {
+  private def evalOpCode(program: Program): Program = {
+    val (listing, curr, input, output) = program
     val currVal = listing(curr)
     val opCode = currVal % 100
     val args = (currVal / 100).toString.map(_.asDigit).reverse.toList
@@ -35,36 +38,39 @@ object IntCodeParser {
         val (leftArg, rightArg) = twoArg
         val assignLoc = param(curr + 3)
         val updatedValue = if (opCode == 1) leftArg + rightArg else leftArg * rightArg
-        (listing.updated(assignLoc, updatedValue), curr + 4, inputs)
+        (listing.updated(assignLoc, updatedValue), curr + 4, input, output)
       case 3 =>
-//        println("Reading input")
-        (listing.updated(param(curr + 1), inputs.head), curr + 2, inputs.tail)
+//        println(s"Reading input $oneArg")
+        (listing.updated(param(curr + 1), input.head), curr + 2, input.tail, output)
       case 4 =>
-        println(oneArg)
-        (listing, curr + 2, inputs)
+//        println(s"Writing output $oneArg")
+        (listing, curr + 2, input, output :+ oneArg)
       case 5 | 6 =>
         val (chk, jmp) = twoArg
-        val jmpTest = if(opCode == 5) chk != 0 else chk == 0
+        val jmpTest = if (opCode == 5) chk != 0 else chk == 0
 //        println(s"Running jmps, checking $chk with jmp to $jmp")
-        (listing, if(jmpTest) jmp else curr + 3, inputs)
+        (listing, if (jmpTest) jmp else curr + 3, input, output)
       case 7 | 8 =>
         val (left, right) = twoArg
         val assign = param(curr + 3)
-//        println(s"Running comparison with args left: $left, right: $right, assign: $assign")
-        val test = if(opCode == 7) left < right else left == right
-        (listing.updated(assign, if(test) 1 else 0), curr + 4, inputs)
-      case _ => assert(assertion = false, s"Undefined OpCode $opCode"); ???
+        //        println(s"Running comparison with args left: $left, right: $right, assign: $assign")
+        val test = if (opCode == 7) left < right else left == right
+        (listing.updated(assign, if (test) 1 else 0), curr + 4, input, output)
+      case _ => throw new UnsupportedOperationException(s"Undefined OpCode $opCode")
     }
   }
 
-  def evalProgram(programListing: Vector[Int], inputs: Seq[Int] = Seq()): Vector[Int] = {
+  def evalProgram(programListing: Vector[Int], inputs: Seq[Int] = Seq()): (Vector[Int], Seq[Int]) = {
     @scala.annotation.tailrec
     def recurse(program: Program): Program = program match {
-      case (listing, line, _) if listing(line) == 99 => program
-      case (listing, line, inputs) => recurse(evalOpCode(listing, line, inputs))
+      case (listing, line, _, _) if listing(line) == 99 => program
+      case (listing, line, input, output) => recurse(evalOpCode(listing, line, input, output))
     }
 
-    recurse(programListing, 0, inputs)._1
+    val (listing, _, _, output) = recurse(programListing, 0, inputs, Seq())
+    (listing, output)
   }
+
+  def readIntCodeFile(path: String): Vector[Int] = readResourceFile(path).getLines().toSeq.head.split(',').toVector.map(_.toInt)
 
 }
