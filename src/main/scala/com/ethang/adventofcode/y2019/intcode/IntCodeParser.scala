@@ -7,31 +7,22 @@ case class IntCodeProgram(listing: Vector[Long], currLine: Int, relLine: Int = 0
   private val args = (listing(currLine) / 100).toString.map(_.asDigit).reverse.toList
 
   private val safeAccess = (line: Int) => if (listing.isDefinedAt(line)) listing(line) else 0
-
-  def arg(line: Int, mode: Int = 1): Long = mode match {
-    case 0 => safeAccess(safeAccess(line).toInt)
-    case 1 => safeAccess(line)
-    case 2 => safeAccess((safeAccess(line) + relLine).toInt)
-  }
-
-  def inputArg: Long = arg(currLine + 1)
-
-  def singleArgOp: Long = arg(currLine + 1, args.headOption.getOrElse(0))
-
-  def twoArgOp: (Long, Long) = {
-    val fst :: snd :: Nil = args.padTo(2, 0)
-    (arg(currLine + 1, fst), arg(currLine + 2, snd))
+  private val argMode = (pos: Int) => if (args.isDefinedAt(pos - 1)) args(pos - 1) else 0
+  private val arg = (pos: Int) => {
+    val line = currLine + pos
+    argMode(pos) match {
+      case 0 => safeAccess(line).toInt
+      case 1 => line
+      case 2 => safeAccess(line).toInt + relLine
+    }
   }
 
   def safeUpdateLine(line: Int, value: Long): IntCodeProgram = {
     val padded: Vector[Long] = if (listing.isDefinedAt(line)) listing else listing.padTo(line + 1, 0)
     copy(padded.updated(line, value))
   }
-}
 
-object IntCodeParser {
-
-  private def parseOpCode(program: IntCodeProgram): OpCode = {
+  def parseOpCode: OpCode = {
     // 1 - Addition
     // 2 - Multiplication
     // 3 - Input
@@ -41,25 +32,21 @@ object IntCodeParser {
     // 7 - Compare equals
     // 8 - Compare less than
     // 9 - Adjust relative
-    program.opCode match {
+    opCode match {
       case 1 | 2 =>
-        val (leftArg, rightArg) = program.twoArgOp
-        val assignLoc = program.arg(program.currLine + 3)
-        Algebra(program.opCode, leftArg, rightArg, assignLoc.toInt)
-      case 3 => Input(program.inputArg.toInt)
-      case 4 => Output(program.singleArgOp)
-      case 5 | 6 =>
-        val (chk, jmp) = program.twoArgOp
-        Jump(program.opCode, chk, jmp.toInt)
-      case 7 | 8 =>
-        val (left, right) = program.twoArgOp
-        val assign = program.arg(program.currLine + 3)
-        Compare(program.opCode, left, right, assign.toInt)
-      case 9 => Relative(program.singleArgOp.toInt)
+        Algebra(opCode, safeAccess(arg(1)), safeAccess(arg(2)), arg(3))
+      case 3 => Input(arg(1))
+      case 4 => Output(safeAccess(arg(1)))
+      case 5 | 6 => Jump(opCode, safeAccess(arg(1)), safeAccess(arg(2)).toInt)
+      case 7 | 8 => Compare(opCode, safeAccess(arg(1)), safeAccess(arg(2)), arg(3))
+      case 9 => Relative(safeAccess(arg(1)).toInt)
       case 99 => Halt
-      case _ => throw new UnsupportedOperationException(s"Undefined OpCode ${program.opCode}")
+      case _ => throw new UnsupportedOperationException(s"Undefined OpCode $opCode")
     }
   }
+}
+
+object IntCodeParser {
 
   // Evaluates the given program with all the inputs given upfront.  If inputs are missing, throws error
   def evalProgram(programListing: Vector[Long], inputs: Seq[Long] = Seq()): (Vector[Long], Seq[Long]) = {
@@ -90,12 +77,12 @@ object IntCodeParser {
   @scala.annotation.tailrec
   def interactiveProgram(program: IntCodeProgram): (IntCodeProgram, Boolean) = program match {
     case prog @ IntCodeProgram(listing, currLine, _, _) if currLine > listing.length - 1 =>
-//      println(s"Given line $currLine was longer than the program listing")
+      println(s"Given line $currLine was longer than the program listing")
       (prog.copy(io = None), true)
     case prog =>
-      val opCode = parseOpCode(prog)
+      val opCode = prog.parseOpCode
       val newProg = opCode.run(prog)
-//      println(s"Ran $opCode")
+//      println(s"Ran $opCode, program: $newProg")
       opCode match {
         case Halt => (newProg, true)
         case _: Input | _: Output => (newProg, false)
@@ -111,12 +98,14 @@ private[intcode] trait OpCode {
 
 private[intcode] case class Algebra(opCode: Long, left: Long, right: Long, assign: Int) extends OpCode {
   override def run(program: IntCodeProgram): IntCodeProgram = {
-    program
+    val updated = program
       .safeUpdateLine(assign, opCode match {
         case 1 => left + right
         case 2 => left * right
       })
       .copy(currLine = program.currLine + 4)
+//    println(s"Ran op code $opCode, updated value is ${updated.listing(assign)}")
+    updated
   }
 }
 

@@ -41,13 +41,20 @@ class IntCodeParserSpec extends BaseSpec {
 
   it should "test relative positions" in {
     val testData = Seq(
-      (Vector(109L, 1L, 204L, -1L, 1001L, 100L, 1L, 100L, 1008L, 100L, 16L, 101L, 1006L, 101L, 0L, 99L), Seq()) ->
+      (Vector[Long](109L, 1L, 204L, -1L, 1001L, 100L, 1L, 100L, 1008L, 100L, 16L, 101L, 1006L, 101L, 0L, 99L), Seq()) ->
         Seq(109L, 1L, 204L, -1L, 1001L, 100L, 1L, 100L, 1008L, 100L, 16L, 101L, 1006L, 101L, 0L, 99L),
-      (Vector(1102L, 34915192L, 34915192L, 7L, 4L, 7L, 99L), Seq()) -> Seq(1219070632396864L),
-      (Vector(104L, 1125899906842624L, 99L), Seq()) -> Seq(1125899906842624L)
+      (Vector[Long](1102L, 34915192L, 34915192L, 7L, 4L, 7L, 99L), Seq()) -> Seq(1219070632396864L),
+      (Vector[Long](104L, 1125899906842624L, 99L), Seq()) -> Seq(1125899906842624L),
+      (Vector[Long](109L, -1L, 4L, 1L, 99L), Seq()) -> Seq(-1L),
+      (Vector[Long](109L, -1L, 104L, 1L, 99L), Seq()) -> Seq(1L),
+      (Vector[Long](109, 1, 9, 2, 204, -6, 99), Seq()) -> Seq(204),
+      (Vector[Long](109, 1, 109, 9, 204, -6, 99), Seq()) -> Seq(204),
+      (Vector[Long](109, 1, 209, -1, 204, -106, 99), Seq()) -> Seq(204),
+      (Vector[Long](109, 1, 3, 3, 204, 2, 99), Seq(1L)) -> Seq(1),
+      (Vector[Long](109, 1, 203, 2, 204, 2, 99), Seq(20L)) -> Seq(20)
     )
 
-    forAll(testData) { case ((listing, inputs), result) => evalProgram(listing, inputs)._2 must be(result) }
+    forAll(testData) { case ((listing, input), result) => evalProgram(listing, input)._2 must be(result) }
   }
 
 }
