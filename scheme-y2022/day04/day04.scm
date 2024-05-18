@@ -35,7 +35,3 @@
   (lambda (l)
     (length (filter (lambda (row) (apply overlap-pairs? (parse-line row))) l))))
 
-; (with-file-as-list "day04/input.txt" part1)
-
-(with-file-as-list "day04/input.txt" part2)
-
