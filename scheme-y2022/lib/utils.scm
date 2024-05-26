@@ -14,8 +14,9 @@
   (lambda (file fn)
     (call-with-input-file file (lambda (f) (fn (reverse (file->list f)))))))
 
-; Super basic fish operator.  Definitely not accurate, but works enough for now
-(define >=>
+; Originally had this as fish, but that wasn't quite right
+; This is closer, though pretty sure it doesn't exist in Haskell.
+(define <$$>
   (lambda (fn list-of-list)
     (map (lambda (inner) (map fn inner)) list-of-list)))
 

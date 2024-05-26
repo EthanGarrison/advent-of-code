@@ -5,8 +5,8 @@
            (dash-splitter (string-splitter 'delimiter #\-))
            ; Apply comma split, then dash split
            (full-split-str (map dash-splitter (comma-splitter str))))
-      ; Fish string->number through each value.
-      (>=> string->number full-split-str))))
+      ; Double map string->number through each value.
+      (<$$> string->number full-split-str))))
 
 (define nested-pairs?
   (lambda (left-pair right-pair)
