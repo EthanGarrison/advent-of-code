@@ -14,8 +14,8 @@
 ; Oh, guess there will be a final walk as well to count all the trues.
 ; Yeah, this is going to be slow
 
-(define (parse-input-row row)
-  (map (lambda (c) (cons (digit-value c) #f)) (string->list row)))
+(define (parse-input-row row init-value)
+  (map (lambda (c) (list (digit-value c) init-value)) (string->list row)))
 
 ; Originally considered reversing the output due to cons naturally reversing the input
 ; but ended up leaving it as I was going to then immediately reverse it again to check
@@ -23,15 +23,45 @@
 (define (mark-seen-trees row)
   (cond ((null? row) '())
         ((pair? row)
-         (cdr (fold (lambda (tree acc)
-                 (let ((largest-tree (car acc))
-                       (marked-trees (cdr acc))
-                       (current-tree (car tree))
-                       (tree-seen (cdr tree)))
-                   (let ((is-biggest (> current-tree largest-tree)))
-                     (cons (if is-biggest current-tree largest-tree) ; Find biggest tree
-                           (cons (cons current-tree (or tree-seen is-biggest)) marked-trees)))))
-               '(-1) row)))
+         (let ((reducer
+                 (lambda (tree acc)
+                   (let ((largest-tree (car acc))
+                         (marked-trees (cdr acc))
+                         (current-tree (car tree))
+                         (tree-seen (cadr tree)))
+                     (let ((is-biggest (> current-tree largest-tree)))
+                       (cons (if is-biggest current-tree largest-tree) ; Find biggest tree
+                             (cons
+                               (list current-tree (or tree-seen is-biggest)) ; Set seen flag
+                               marked-trees)))))))
+           (cdr (fold reducer '(-1) row))))
+        (else error "Given param was not a list" row)))
+
+; Annoying, part two requires a different sort of walk than part one
+; This time, we are checking how many trees each tree can see.  Going
+; to work this similar to the seen, in that we are checking all trees
+; seen from one direction.  Problem is, seems that a situation like
+; 1 1 2 means that the third tree can see the first two.  But, if we
+; have 4 1 2 2, then the fourth tree can't see 4.  So, ups and downs
+; on this.  Looks like rule is, tree can see until it can't.  Dumb
+; way to put it, but whatever.
+(define (count-seen-trees row)
+  (cond ((null? row) '())
+        ((pair? row)
+         (let ((reducer
+                 (lambda (t acc)
+                   (let ((tree (car t))
+                         (count (cadr t)))
+                     (cons
+                       (list
+                         tree
+                         ; The check is due to take-while stopping on a tree that counts.
+                         ; If we see everything, then we don't want to add the extra needed due to take-while
+                         ; Could probably do a custom count rather than a take-while to fix this
+                         (let ((seen (length (take-while (lambda (tl) (> tree (car tl))) acc))))
+                           (* (+ (if (eq? seen (length acc)) 0 1) seen) count)))
+                       acc)))))
+           (fold reducer '() row)))
         (else error "Given param was not a list" row)))
 
 ; Stole from back in day 5.  Not changing, still think it is bad, but hopefully not
@@ -47,13 +77,18 @@
 ; and that there should be a simpler way than this.  And yet, it runs almost instantly
 (define (mark-all-seen-trees rows)
   (let* ((check-both (compose mark-seen-trees mark-seen-trees))
-         (post-row-check (map (compose check-both parse-input-row) rows)))
+         (post-row-check (map (lambda (row) (check-both (parse-input-row row #f))) rows)))
+    (map check-both (rotate-matrix post-row-check))))
+
+; If it isn't broke, don't fix it.  I'll get good at this language one day
+(define (count-all-seen-trees rows)
+  (let* ((check-both (compose count-seen-trees count-seen-trees))
+         (post-row-check (map (lambda (row) (check-both (parse-input-row row 1))) rows)))
     (map check-both (rotate-matrix post-row-check))))
 
 (define (part1 rows)
-  (fold (lambda (row acc) (+ acc (length (filter cdr row)))) 0 (mark-all-seen-trees rows)))
+  (fold (lambda (row acc) (+ acc (length (filter cadr row)))) 0 (mark-all-seen-trees rows)))
 
-; (for-each (lambda (row) (display row) (newline)) (with-file-as-list "day08/sample.txt" part1))
-(with-file-as-list "day08/input.txt" part1)
-(RESTART 1)
+(define (part2 rows)
+  (fold (lambda (row acc) (max (fold max 0 (map cadr row)) acc)) 0 (count-all-seen-trees rows)))
 
