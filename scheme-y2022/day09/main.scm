@@ -69,6 +69,22 @@
           ((eq? movement #\D) (list head-x (+ -1 head-y)))
           (else (error "Unsupported direction" movement)))))))
 
+(define (execute-instruction-multi instr rope seen)
+  (cond
+    ((not-pair? instr) (error "Instruction set given was not a pair" instr))
+    ((not (hash-table? seen)) (error "Seen values given was not an hash table" seen))
+    (else
+      (let ((movement (car instr)))
+        (let recurse ((cnt (cadr instr))
+                      (curr-rope rope))
+          (if (eq? 0 cnt)
+            curr-rope
+            (let* ((next-head (move-head (car curr-rope) movement))
+                   (next-tails (fold (lambda (t prev) (cons (move-tail (car prev) t) prev)) `(,next-head) (cdr curr-rope))))
+              (begin
+                (hash-table-update!/default seen (car next-tails) (lambda (v) (+ 1 v)) 0)
+                (recurse (- cnt 1) (reverse next-tails))))))))))
+
 (define (execute-instruction instr head tail seen)
   (cond
     ((not-pair? head) (error "Head given was not a pair" head))
@@ -107,7 +123,16 @@
 ; hash table, as I only really used it to keep count of times visited.
 ; Another situation of my bad habit to try and predict what the part two
 ; problem will be.
+(define (part2 rows)
+  (let ((intrs (map parse-row rows))
+        (seen (make-equal-hash-table)))
+    (cons
+      seen
+      (fold
+        (lambda (instr rope) (execute-instruction-multi instr rope seen))
+        '((0 0) (0 0) (0 0) (0 0) (0 0) (0 0) (0 0) (0 0) (0 0) (0 0))
+        intrs))))
 
-(define result (with-file-as-list "day09/input.txt" part1))
+(define result (with-file-as-list "day09/input.txt" part2))
 (hash-table-size (first result))
 

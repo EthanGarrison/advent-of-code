@@ -32,3 +32,10 @@
         ((< (length l) i) (list l))  ; If there are not enough elements in l, return l.  Only needed because drop is strict
         (else (cons (take l i) (grouped i (drop l i))))))
 
+(define (window i l)
+  (cond ((eq? i 0) '())
+        ((eq? i 1) l)
+        ((null? l) '())
+        ((< (length l) i) '())
+        (else (cons (take l i) (window i (drop l 1))))))
+
