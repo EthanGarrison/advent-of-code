@@ -54,6 +54,6 @@
            (first parse-list)))))
 
 ; (call-with-input-file 
-;   "day01.txt"
+;   "day01/day01.txt"
 ;   (lambda (f) (part-two (port->lines f))))
 
